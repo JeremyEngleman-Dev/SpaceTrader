@@ -1,17 +1,7 @@
-
+from ship import *
 
 class Player:
-    def __init__(self, name):
+    def __init__(self, name, ship_name):
         self.name = name
-
-        self.player_account = 500
-        self.player_score = 0
-
-    def add_money(self, amount):
-        self.player_account += amount
-
-    def remove_money(self, amount):
-        self.player_account -= amount
-
-    def add_score(self, amount):
-        self.player_score += amount
+        self.ship = Ship(ship_name,100,100,10)
+        self.account = 1000
