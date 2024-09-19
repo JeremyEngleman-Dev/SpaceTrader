@@ -1,12 +1,9 @@
 from tkinter import *
-from interface import *
+from game import * 
+from interface import * 
 
 def main():
-    window = Window([800,600])
-
-
-
-    window.wait_for_close()
+    Game("Test Pilot", "Test Ship")
 
 if __name__ == "__main__":
     main()
