@@ -1,54 +1,97 @@
 import tkinter as tk
 from tkinter import ttk
 from station import * 
+from controller import *
 
-class Window:
-    def __init__(self, size):
-        self.root = tk.Tk()
-        self.root.title("Space Trader")
-        self.root.geometry(f"{size[0]}x{size[1]}")
-        #self.root.resizable(True,True)
-        #self.root.minsize(800,600)
-        #self.root.maxsize(1920,1080)
-        self.root.tk.call('tk','scaling', 2)
+class Window(ttk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.controller: Controller = None
 
-        self.station_view = StationView()
+        # Station
+        self.station_label = ttk.Label(master=parent,text="The Station")
+        self.station_label.place(x=30,y=10,height=40)
 
-        self.running_state = False
-        self.root.protocol("WM_DELETE_WINDOW", self.close)
+        self.station_window = ttk.Frame(master=parent,width=800,height=1000,relief="sunken")
+        self.station_window.place(x=10,y=60,width=800-20,height=600)
 
-    def redraw(self):
-        self.root.update()
-        self.root.update_idletasks()
+        self.station_ware_view = ttk.Treeview(
+            master=self.station_window,
+            columns=("Volume","Price","Amount"),
+            style="Treeview"
+        )
+        self.station_ware_view.column('#0',width=280)
+        self.station_ware_view.heading('#0',text="Ware")
+        self.station_ware_view.column('Volume',width=120,anchor="e")
+        self.station_ware_view.heading('Volume',text="Volume")
+        self.station_ware_view.column('Price',width=120,anchor="e")
+        self.station_ware_view.heading('Price',text="Price")
+        self.station_ware_view.column('Amount',width=120,anchor="e")
+        self.station_ware_view.heading('Amount',text="Amount")
+        self.station_ware_view.place(x=0,y=0,relwidth=1,height=300)
 
-    def wait_for_close(self):
-        self.running_state = True
-        while self.running_state == True:
-            self.redraw()
+        self.fuel_label = ttk.Label(master=self.station_window,text=f"Fuel Price: {0}")
+        self.fuel_label.place(x=30,y=300+10,height=40)
 
-    def close(self):
-        self.running_state = False
+        # Ship
+        self.ship_label = ttk.Label(master=parent,text="Your Ship")
+        self.ship_label.place(x=10 + 800 + 20 + 30,y=10, height=40)
 
-class StationView:
-    def __init__(self):
-        self.station_view = ttk.Treeview(columns=("Volume","Price","Amount"), style="Treeview")
-        self.station_view.column('#0',width=300)
-        self.station_view.heading('#0',text="Ware")
-        self.station_view.column('Volume',width=120,anchor="e")
-        self.station_view.heading('Volume',text="Volume")
-        self.station_view.column('Price',width=120,anchor="e")
-        self.station_view.heading('Price',text="Price")
-        self.station_view.column('Amount',width=120,anchor="e")
-        self.station_view.heading('Amount',text="Amount")
-        self.station_view.place(x=30,y=30)
+        self.ship_window = ttk.Frame(master=parent,width=800,height=1000,relief="sunken")
+        self.ship_window.place(x=10 + 800 + 20,y=60,width=800-40,height=600)
+
+        self.ship_ware_view = ttk.Treeview(
+            master=self.ship_window,
+            columns=("Volume","Amount"),
+            style="Treeview"
+        )
+        self.ship_ware_view.column('#0',width=280)
+        self.ship_ware_view.heading('#0',text="Ware")
+        self.ship_ware_view.column('Volume',width=120,anchor="e")
+        self.ship_ware_view.heading('Volume',text="Volume")
+        self.ship_ware_view.column('Amount',width=120,anchor="e")
+        self.ship_ware_view.heading('Amount',text="Amount")
+        self.ship_ware_view.place(x=0,y=0,relwidth=1,height=300)
 
         style = ttk.Style()
-        style.configure("Treeview", padding=8)
+        style.configure("Treeview", padding=4)
 
-    def new_station(self, station: Station):
-        self.station_view.delete()
-        self.refresh(station)
+    def set_controller(self, controller):
+        self.controller = controller
+        self.initialize_jump_button()
 
-    def refresh(self, station: Station):
-        for ware in station.stock:
-            self.station_view.insert('',tk.END,iid=station.stock.index(ware),text=ware.name,values=(ware.volume,ware.price,ware.amount))
+    def initialize_jump_button(self):
+        self.jump_button = ttk.Button(
+            master=self.station_window,
+            text="JUMP",
+            command=self.controller.jump_to_new_station
+        )
+        self.jump_button.place(x=800-150-30,y=310,width=150,height=100)
+
+    def refresh_station_window(self):
+        if self.controller:
+            for item in self.station_ware_view.get_children():
+                self.station_ware_view.delete(item)
+            station = self.controller.get_current_station()
+            for ware in station.stock:
+                self.station_ware_view.insert(
+                    '',
+                    tk.END,
+                    iid=station.stock.index(ware),
+                    text=ware.name,
+                    values=(ware.volume,ware.price,ware.amount)
+                )
+            self.fuel_label.config(text=f"Fuel Price: {station.fuel_price}")
+
+    def refresh_ship_window(self):
+        if self.controller:
+            ship = self.controller.get_current_ship()
+            self.ship_ware_view.delete()
+            for ware in ship.cargo:
+                self.ship_ware_view.insert(
+                    '',
+                    tk.END,
+                    iid=ship.cargo.index(ware),
+                    text=ware.name,
+                    values=(ware.volume,ware.amount)
+                )
