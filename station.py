@@ -5,6 +5,7 @@ class Station:
     def __init__(self, wares):
         self.stock = []
         self.fuel_price = None
+        self.fuel_to_buy_amount = 0
         self.generate_stock(wares)
 
     def generate_stock(self, wares):
