@@ -7,7 +7,6 @@ class Window(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.controller: Controller = None
-        self.fuel_to_buy_amount = 0
 
         # Station
         self.station_label = ttk.Label(master=parent,text="The Station")
@@ -19,7 +18,8 @@ class Window(ttk.Frame):
         self.station_ware_view = ttk.Treeview(
             master=self.station_window,
             columns=("Volume","Price","Amount"),
-            style="Treeview"
+            style="Treeview",
+            selectmode="browse"
         )
         self.station_ware_view.column('#0',width=280)
         self.station_ware_view.heading('#0',text="Ware")
@@ -31,14 +31,18 @@ class Window(ttk.Frame):
         self.station_ware_view.heading('Amount',text="Amount")
         self.station_ware_view.place(x=0,y=0,relwidth=1,height=300)
 
+        self.station_ware_view.bind()
+
         self.fuel_label = ttk.Label(master=self.station_window,text=f"Fuel Price: {0}")
         self.fuel_label.place(x=10,y=300+15,height=40,width=150)
 
-        self.fuel_to_buy = ttk.Entry(
-            master=self.station_window
-        )
-        self.fuel_to_buy.insert(0,self.fuel_to_buy_amount)
+        self.fuel_to_buy = ttk.Entry(master=self.station_window)
+        self.fuel_to_buy.insert(0,0)
         self.fuel_to_buy.place(x=180,y=315,width=100,height=40)
+
+        self.ware_to_buy = ttk.Entry(master=self.station_window)
+        self.ware_to_buy.insert(0,0)
+        self.ware_to_buy.place(x=180,y=500,width=100,height=40)
 
         # Ship
         self.ship_label = ttk.Label(master=parent,text="Your Ship")
@@ -50,7 +54,8 @@ class Window(ttk.Frame):
         self.ship_ware_view = ttk.Treeview(
             master=self.ship_window,
             columns=("Volume","Amount"),
-            style="Treeview"
+            style="Treeview",
+            selectmode="browse"
         )
         self.ship_ware_view.column('#0',width=280)
         self.ship_ware_view.heading('#0',text="Ware")
@@ -72,6 +77,9 @@ class Window(ttk.Frame):
         self.ship_fuel.place(x=10,y=360,width=400,height=40)
         self.ship_fuel_label = ttk.Label(master=self.ship_window,text=f"Fuel: {0}/{0}")
         self.ship_fuel_label.place(x=10+400+10,y=360,height=40)
+
+        self.player_account = ttk.Label(master=self.ship_window,text=f"Credits: {0}")
+        self.player_account.place(x=10,y=410,height=40)
 
         self.refresh_station_window()
         self.refresh_ship_window()
@@ -118,9 +126,27 @@ class Window(ttk.Frame):
         )
         self.fuel_to_buy_max.place(x=390,y=315,width=60,height=40)
 
+        self.ware_to_buy_decrease = ttk.Button(
+            master=self.station_window,
+            text="-",
+            command=self.controller.decrement_ware_to_buy_amount
+        )
+        self.ware_to_buy_decrease.place(x=290,y=500,width=40,height=40)
+
+        self.ware_to_buy_increase = ttk.Button(
+            master=self.station_window,
+            text="-",
+            command=self.controller.increment_ware_to_buy_amount
+        )
+        self.ware_to_buy_decrease.place(x=290,y=500,width=40,height=40)
+
     def refresh_fuel_to_buy(self, fuel):
         self.fuel_to_buy.delete(0, tk.END)
         self.fuel_to_buy.insert(0,fuel)
+
+    def refresh_ware_to_buy(self, ware):
+        self.fuel_to_buy.delete(0, tk.END)
+        self.fuel_to_buy.insert(0,ware)
 
     def refresh_station_window(self):
         if self.controller:
@@ -139,6 +165,7 @@ class Window(ttk.Frame):
             # Refresh station ware information
             self.fuel_label.config(text=f"Fuel Price: {station.fuel_price}")
             self.refresh_fuel_to_buy(station.fuel_to_buy_amount)
+            self.refresh_ware_to_buy(station.ware_to_buy_amount)
 
     def refresh_ship_window(self):
         if self.controller:
@@ -146,6 +173,7 @@ class Window(ttk.Frame):
             for item in self.ship_ware_view.get_children():
                 self.ship_ware_view.delete(item)
             ship = self.controller.get_current_ship()
+            player = self.controller.get_player()
             ship_cargo_volume = 0
             for ware in ship.cargo:
                 self.ship_ware_view.insert(
@@ -163,3 +191,4 @@ class Window(ttk.Frame):
             self.ship_fuel["maximum"] = ship.fuel_capacity
             self.ship_fuel["value"] = ship.fuel_current
             self.ship_fuel_label.config(text=f"Fuel: {ship.fuel_current}/{ship.fuel_capacity}")
+            self.player_account.config(text=f"Credits: {player.account}")

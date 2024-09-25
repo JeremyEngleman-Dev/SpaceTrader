@@ -6,7 +6,9 @@ class Station:
         self.stock = []
         self.fuel_price = None
         self.fuel_to_buy_amount = 0
+        self.ware_to_buy_amount = 0
         self.generate_stock(wares)
+        self.focused_ware = None
 
     def generate_stock(self, wares):
         self.fuel_price = random.randrange(2, 15)
