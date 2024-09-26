@@ -30,9 +30,7 @@ class Window(ttk.Frame):
         self.station_ware_view.column('Amount',width=120,anchor="e")
         self.station_ware_view.heading('Amount',text="Amount")
         self.station_ware_view.place(x=0,y=0,relwidth=1,height=300)
-
-        self.station_ware_view.bind()
-
+        self.station_ware_view.bind('<ButtonRelease-1>', lambda e: self.controller.on_station_ware_select(self.station_ware_view.focus()))
         self.fuel_label = ttk.Label(master=self.station_window,text=f"Fuel Price: {0}")
         self.fuel_label.place(x=10,y=300+15,height=40,width=150)
 
@@ -135,18 +133,25 @@ class Window(ttk.Frame):
 
         self.ware_to_buy_increase = ttk.Button(
             master=self.station_window,
-            text="-",
+            text="+",
             command=self.controller.increment_ware_to_buy_amount
         )
-        self.ware_to_buy_decrease.place(x=290,y=500,width=40,height=40)
+        self.ware_to_buy_increase.place(x=340,y=500,width=40,height=40)
+
+        self.ware_to_buy_max = ttk.Button(
+            master=self.station_window,
+            text="MAX",
+            command=self.controller.max_ware_to_buy_amount
+        )
+        self.ware_to_buy_max.place(x=390,y=500,width=60,height=40)
 
     def refresh_fuel_to_buy(self, fuel):
         self.fuel_to_buy.delete(0, tk.END)
         self.fuel_to_buy.insert(0,fuel)
 
     def refresh_ware_to_buy(self, ware):
-        self.fuel_to_buy.delete(0, tk.END)
-        self.fuel_to_buy.insert(0,ware)
+        self.ware_to_buy.delete(0, tk.END)
+        self.ware_to_buy.insert(0,ware)
 
     def refresh_station_window(self):
         if self.controller:

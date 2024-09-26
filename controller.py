@@ -71,14 +71,33 @@ class Controller:
 
     def increment_ware_to_buy_amount(self):
         station = self.get_current_station()
-        ship = self.get_current_ship()
-        player = self.get_player()
-        ship_cargo_size = ship.get_total_cargo_size()
-        #if station.ware_to_buy_amount >= (ship.cargo_capacity - ship_cargo_size):
-        #    return
-        #if (station.ware_to_buy_amount + 1) * station.fuel_price > player.account:
-        #    return
-        #station.fuel_to_buy_amount += 1
-        #self.view.refresh_fuel_to_buy(station.fuel_to_buy_amount)
+        if station.focused_ware is not None:
+            ship = self.get_current_ship()
+            ship_cargo_free_space = ship.get_current_cargo_free_space()
+            if ship_cargo_free_space >= station.focused_ware.volume * (station.ware_to_buy_amount + 1):
+                if station.focused_ware.amount >= (station.ware_to_buy_amount + 1):
+                    player = self.get_player()
+                    if player.account >= station.focused_ware.price * (station.ware_to_buy_amount + 1):
+                        station.ware_to_buy_amount += 1
+                        self.view.refresh_ware_to_buy(station.ware_to_buy_amount)
+        return
+    
+    def max_ware_to_buy_amount(self):
+        station = self.get_current_station()
+        if station.focused_ware is not None:
+            ship = self.get_current_ship()
+            player = self.get_player()
+            ship_cargo_free_space = ship.get_current_cargo_free_space()
+            ship_cargo_space_max = ship_cargo_free_space // station.focused_ware.volume
+            player_credit_max = player.account // station.focused_ware.price
+            station.ware_to_buy_amount = min(ship_cargo_space_max, player_credit_max, station.focused_ware.amount)
+            self.view.refresh_ware_to_buy(station.ware_to_buy_amount)
+
+    def on_station_ware_select(self, station_ware):
+        if station_ware:
+            station = self.get_current_station()
+            station.focused_ware = station.stock[int(station_ware)]
+            station.ware_to_buy_amount = 0
+            self.view.refresh_ware_to_buy(station.ware_to_buy_amount)    
 
         

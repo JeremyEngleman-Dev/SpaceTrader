@@ -18,8 +18,12 @@ class Ship:
         self.engine_burn = engine_burn
         self.engine_level = 1
 
-        def get_total_cargo_size(self):
-            total_cargo_size = 0
-            for ware in self.cargo:
-                total_cargo_size += ware.volume * ware.amount
-            return total_cargo_size
+    def get_current_cargo_size(self):
+        current_cargo_size = 0
+        for ware in self.cargo:
+            current_cargo_size += ware.volume * ware.amount
+        return current_cargo_size
+    
+    def get_current_cargo_free_space(self):
+        current_cargo = self.get_current_cargo_size()
+        return self.cargo_capacity - current_cargo
