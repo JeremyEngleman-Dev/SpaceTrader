@@ -19,4 +19,10 @@ class Station:
         for ware in self.stock:
             ware.amount = random.randrange(ware.max_stock)
             ware.price = random.randrange(ware.low_price, ware.high_price)
+
+    def check_for_ware_in_stock(self, ware_name):
+        for ware in self.stock:
+            if ware.name == ware_name:
+                return self.stock.index(ware)
+        return None
         

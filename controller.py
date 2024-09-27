@@ -1,4 +1,4 @@
-
+from ware import *
 
 class Controller:
     def __init__(self, game, view):
@@ -98,6 +98,76 @@ class Controller:
             station = self.get_current_station()
             station.focused_ware = station.stock[int(station_ware)]
             station.ware_to_buy_amount = 0
-            self.view.refresh_ware_to_buy(station.ware_to_buy_amount)    
+            self.view.refresh_ware_to_buy(station.ware_to_buy_amount)
 
-        
+    def buy_ware(self):
+        station = self.get_current_station()
+        if station.ware_to_buy_amount == 0:
+            return
+        ship = self.get_current_ship()
+        player = self.get_player()
+        player.account -= station.focused_ware.price * station.ware_to_buy_amount
+        ship_cargo_index = ship.check_for_ware_in_cargo(station.focused_ware.name)
+        if ship_cargo_index is None:
+            ship.cargo.append(Ware(station.focused_ware.name,station.focused_ware.volume,0,0,0,station.ware_to_buy_amount, station.focused_ware.price))
+        else:
+            ship.cargo[ship_cargo_index].amount += station.ware_to_buy_amount
+        station.focused_ware.amount -= station.ware_to_buy_amount
+        station.ware_to_buy_amount = 0
+        self.view.refresh_station_window()
+        self.view.refresh_ship_window()
+
+    def decrement_ware_to_sell_amount(self):
+        ship = self.get_current_ship()
+        if ship.ware_to_sell_amount == 0:
+            return
+        ship.ware_to_sell_amount -= 1
+        self.view.refresh_ware_to_sell(ship.ware_to_sell_amount)
+
+    def increment_ware_to_sell_amount(self):
+        ship = self.get_current_ship()
+        if ship.focused_ware is not None:
+            station = self.get_current_station()
+            station_stock_index = station.check_for_ware_in_stock(ship.focused_ware.name)
+            if station_stock_index is None:
+                return
+            if ship.ware_to_sell_amount + 1 <= ship.focused_ware.amount:
+                 ship.ware_to_sell_amount += 1
+                 self.view.refresh_ware_to_sell(ship.ware_to_sell_amount)
+        return
+
+    def max_ware_to_sell_amount(self):
+        ship = self.get_current_ship()
+        if ship.focused_ware is not None:
+            station = self.get_current_station()
+            station_stock_index = station.check_for_ware_in_stock(ship.focused_ware.name)
+            if station_stock_index is None:
+                return
+            ship.ware_to_sell_amount = ship.focused_ware.amount
+            self.view.refresh_ware_to_sell(ship.ware_to_sell_amount)
+
+    def sell_ware(self):
+        ship = self.get_current_ship()
+        if ship.ware_to_sell_amount == 0:
+            return
+        player = self.get_player()
+        station = self.get_current_station()
+        station_ware_index = station.check_for_ware_in_stock(ship.focused_ware.name)
+        if station_ware_index is None:
+            return
+        player.account += station.stock[station_ware_index].price * ship.ware_to_sell_amount
+        station.stock[station_ware_index].amount += ship.ware_to_sell_amount
+        ship.focused_ware.amount -= ship.ware_to_sell_amount
+        ship_ware_index = ship.check_for_ware_in_cargo(ship.focused_ware.name)
+        if ship.cargo[ship_ware_index].amount == 0:
+            ship.cargo.pop(ship_ware_index)
+        ship.ware_to_sell_amount = 0   
+        self.view.refresh_station_window()
+        self.view.refresh_ship_window()
+
+    def on_ship_ware_select(self, ship_ware):
+        if ship_ware:
+            ship = self.get_current_ship()
+            ship.focused_ware = ship.cargo[int(ship_ware)]
+            ship.ware_to_sell_amount = 0
+            self.view.refresh_ware_to_sell(ship.ware_to_sell_amount)

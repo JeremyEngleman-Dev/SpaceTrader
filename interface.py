@@ -40,7 +40,7 @@ class Window(ttk.Frame):
 
         self.ware_to_buy = ttk.Entry(master=self.station_window)
         self.ware_to_buy.insert(0,0)
-        self.ware_to_buy.place(x=180,y=500,width=100,height=40)
+        self.ware_to_buy.place(x=10,y=550,width=100,height=40)
 
         # Ship
         self.ship_label = ttk.Label(master=parent,text="Your Ship")
@@ -62,6 +62,7 @@ class Window(ttk.Frame):
         self.ship_ware_view.column('Amount',width=120,anchor="e")
         self.ship_ware_view.heading('Amount',text="Amount")
         self.ship_ware_view.place(x=0,y=0,relwidth=1,height=300)
+        self.ship_ware_view.bind('<ButtonRelease-1>', lambda e: self.controller.on_ship_ware_select(self.ship_ware_view.focus()))
 
         style = ttk.Style()
         style.configure("Horizontal.TProgressbar", background="green")
@@ -78,6 +79,10 @@ class Window(ttk.Frame):
 
         self.player_account = ttk.Label(master=self.ship_window,text=f"Credits: {0}")
         self.player_account.place(x=10,y=410,height=40)
+
+        self.ware_to_sell = ttk.Entry(master=self.ship_window)
+        self.ware_to_sell.insert(0,0)
+        self.ware_to_sell.place(x=10,y=550,width=100,height=40)
 
         self.refresh_station_window()
         self.refresh_ship_window()
@@ -129,21 +134,56 @@ class Window(ttk.Frame):
             text="-",
             command=self.controller.decrement_ware_to_buy_amount
         )
-        self.ware_to_buy_decrease.place(x=290,y=500,width=40,height=40)
+        self.ware_to_buy_decrease.place(x=120,y=550,width=40,height=40)
 
         self.ware_to_buy_increase = ttk.Button(
             master=self.station_window,
             text="+",
             command=self.controller.increment_ware_to_buy_amount
         )
-        self.ware_to_buy_increase.place(x=340,y=500,width=40,height=40)
+        self.ware_to_buy_increase.place(x=170,y=550,width=40,height=40)
 
         self.ware_to_buy_max = ttk.Button(
             master=self.station_window,
             text="MAX",
             command=self.controller.max_ware_to_buy_amount
         )
-        self.ware_to_buy_max.place(x=390,y=500,width=60,height=40)
+        self.ware_to_buy_max.place(x=220,y=550,width=60,height=40)
+
+        self.ware_buy_button = ttk.Button(
+            master=self.station_window,
+            text="BUY WARE",
+            command=self.controller.buy_ware
+        )
+        self.ware_buy_button.place(x=620,y=490,width=150,height=100)
+
+        self.ware_to_sell_decrease = ttk.Button(
+            master=self.ship_window,
+            text="-",
+            command=self.controller.decrement_ware_to_sell_amount
+        )
+        self.ware_to_sell_decrease.place(x=120,y=550,width=40,height=40)
+
+        self.ware_to_sell_increase = ttk.Button(
+            master=self.ship_window,
+            text="+",
+            command=self.controller.increment_ware_to_sell_amount
+        )
+        self.ware_to_sell_increase.place(x=170,y=550,width=40,height=40)
+
+        self.ware_to_sell_max = ttk.Button(
+            master=self.ship_window,
+            text="MAX",
+            command=self.controller.max_ware_to_sell_amount
+        )
+        self.ware_to_sell_max.place(x=220,y=550,width=60,height=40)
+
+        self.ware_sell_button = ttk.Button(
+            master=self.ship_window,
+            text="SELL WARE",
+            command=self.controller.sell_ware
+        )
+        self.ware_sell_button.place(x=600,y=490,width=150,height=100)
 
     def refresh_fuel_to_buy(self, fuel):
         self.fuel_to_buy.delete(0, tk.END)
@@ -152,6 +192,10 @@ class Window(ttk.Frame):
     def refresh_ware_to_buy(self, ware):
         self.ware_to_buy.delete(0, tk.END)
         self.ware_to_buy.insert(0,ware)
+
+    def refresh_ware_to_sell(self, ware):
+        self.ware_to_sell.delete(0, tk.END)
+        self.ware_to_sell.insert(0,ware)
 
     def refresh_station_window(self):
         if self.controller:
@@ -197,3 +241,4 @@ class Window(ttk.Frame):
             self.ship_fuel["value"] = ship.fuel_current
             self.ship_fuel_label.config(text=f"Fuel: {ship.fuel_current}/{ship.fuel_capacity}")
             self.player_account.config(text=f"Credits: {player.account}")
+            self.refresh_ware_to_sell(ship.ware_to_sell_amount)
