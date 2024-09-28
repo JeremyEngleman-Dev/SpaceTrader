@@ -42,6 +42,9 @@ class Window(ttk.Frame):
         self.ware_to_buy.insert(0,0)
         self.ware_to_buy.place(x=10,y=550,width=100,height=40)
 
+        self.ware_to_buy_price = ttk.Label(master=self.station_window,text=f"{0} Cr")
+        self.ware_to_buy_price.place(x=10,y=500)
+
         # Ship
         self.ship_label = ttk.Label(master=parent,text="Your Ship")
         self.ship_label.place(x=10 + 800 + 20 + 30,y=10, height=40)
@@ -66,6 +69,7 @@ class Window(ttk.Frame):
 
         style = ttk.Style()
         style.configure("Horizontal.TProgressbar", background="green")
+        style.configure("Treeview",rowheight=28)
 
         self.ship_stock = ttk.Progressbar(master=self.ship_window, value=20, style="Horizontal.TProgressbar")
         self.ship_stock.place(x=10,y=310,width=400,height=40)
@@ -84,6 +88,9 @@ class Window(ttk.Frame):
         self.ware_to_sell.insert(0,0)
         self.ware_to_sell.place(x=10,y=550,width=100,height=40)
 
+        self.ware_to_sell_price = ttk.Label(master=self.ship_window,text=f"{0} Cr")
+        self.ware_to_sell_price.place(x=10,y=500)
+
         self.refresh_station_window()
         self.refresh_ship_window()
 
@@ -96,7 +103,7 @@ class Window(ttk.Frame):
     def initialize_controls(self):
         self.jump_button = ttk.Button(
             master=self.station_window,
-            text="JUMP",
+            text="JUMP TO\nNEW\nSTATION",
             command=self.controller.jump_to_new_station
         )
         self.jump_button.place(x=620,y=310,width=150,height=100)
@@ -106,7 +113,7 @@ class Window(ttk.Frame):
             text="BUY FUEL",
             command=self.controller.buy_fuel
         )
-        self.fuel_buy_button.place(x=460,y=310,width=150,height=100)
+        self.fuel_buy_button.place(x=460,y=310,width=150,height=50)
 
         self.fuel_to_buy_decrease = ttk.Button(
             master=self.station_window,
@@ -196,6 +203,12 @@ class Window(ttk.Frame):
     def refresh_ware_to_sell(self, ware):
         self.ware_to_sell.delete(0, tk.END)
         self.ware_to_sell.insert(0,ware)
+
+    def refresh_ware_to_buy_price(self,price):
+        self.ware_to_buy_price.configure(text=f"{price} Cr")
+
+    def refresh_ware_to_sell_price(self,price):
+        self.ware_to_sell_price.configure(text=f"{price} Cr")
 
     def refresh_station_window(self):
         if self.controller:

@@ -68,6 +68,7 @@ class Controller:
             return
         station.ware_to_buy_amount -= 1
         self.view.refresh_ware_to_buy(station.ware_to_buy_amount)
+        self.view.refresh_ware_to_buy_price(station.focused_ware.price * station.ware_to_buy_amount)
 
     def increment_ware_to_buy_amount(self):
         station = self.get_current_station()
@@ -80,6 +81,7 @@ class Controller:
                     if player.account >= station.focused_ware.price * (station.ware_to_buy_amount + 1):
                         station.ware_to_buy_amount += 1
                         self.view.refresh_ware_to_buy(station.ware_to_buy_amount)
+                        self.view.refresh_ware_to_buy_price(station.focused_ware.price * station.ware_to_buy_amount)
         return
     
     def max_ware_to_buy_amount(self):
@@ -92,13 +94,20 @@ class Controller:
             player_credit_max = player.account // station.focused_ware.price
             station.ware_to_buy_amount = min(ship_cargo_space_max, player_credit_max, station.focused_ware.amount)
             self.view.refresh_ware_to_buy(station.ware_to_buy_amount)
+            self.view.refresh_ware_to_buy_price(station.focused_ware.price * station.ware_to_buy_amount)
 
     def on_station_ware_select(self, station_ware):
         if station_ware:
+            ship = self.get_current_ship()
+            ship.focused_ware = None
+            ship.ware_to_sell_amount = 0
+            selected_ship_item = self.view.ship_ware_view.selection()
+            self.view.ship_ware_view.selection_remove(selected_ship_item)
             station = self.get_current_station()
             station.focused_ware = station.stock[int(station_ware)]
             station.ware_to_buy_amount = 0
             self.view.refresh_ware_to_buy(station.ware_to_buy_amount)
+            self.view.refresh_ware_to_sell(ship.ware_to_sell_amount)
 
     def buy_ware(self):
         station = self.get_current_station()
@@ -114,6 +123,8 @@ class Controller:
             ship.cargo[ship_cargo_index].amount += station.ware_to_buy_amount
         station.focused_ware.amount -= station.ware_to_buy_amount
         station.ware_to_buy_amount = 0
+        station.focused_ware = None
+        self.view.refresh_ware_to_buy_price(0)
         self.view.refresh_station_window()
         self.view.refresh_ship_window()
 
@@ -123,6 +134,7 @@ class Controller:
             return
         ship.ware_to_sell_amount -= 1
         self.view.refresh_ware_to_sell(ship.ware_to_sell_amount)
+        self.view.refresh_ware_to_sell_price(ship.focused_ware.price * ship.ware_to_sell_amount)
 
     def increment_ware_to_sell_amount(self):
         ship = self.get_current_ship()
@@ -134,6 +146,7 @@ class Controller:
             if ship.ware_to_sell_amount + 1 <= ship.focused_ware.amount:
                  ship.ware_to_sell_amount += 1
                  self.view.refresh_ware_to_sell(ship.ware_to_sell_amount)
+                 self.view.refresh_ware_to_sell_price(ship.focused_ware.price * ship.ware_to_sell_amount)
         return
 
     def max_ware_to_sell_amount(self):
@@ -145,6 +158,7 @@ class Controller:
                 return
             ship.ware_to_sell_amount = ship.focused_ware.amount
             self.view.refresh_ware_to_sell(ship.ware_to_sell_amount)
+            self.view.refresh_ware_to_sell_price(ship.focused_ware.price * ship.ware_to_sell_amount)
 
     def sell_ware(self):
         ship = self.get_current_ship()
@@ -161,13 +175,21 @@ class Controller:
         ship_ware_index = ship.check_for_ware_in_cargo(ship.focused_ware.name)
         if ship.cargo[ship_ware_index].amount == 0:
             ship.cargo.pop(ship_ware_index)
-        ship.ware_to_sell_amount = 0   
+        ship.ware_to_sell_amount = 0
+        ship.focused_ware = None
+        self.view.refresh_ware_to_sell_price(0)
         self.view.refresh_station_window()
         self.view.refresh_ship_window()
 
     def on_ship_ware_select(self, ship_ware):
         if ship_ware:
+            station = self.get_current_station()
+            station.focused_ware = None
+            station.ware_to_buy_amount = 0
+            selected_station_item = self.view.station_ware_view.selection()
+            self.view.station_ware_view.selection_remove(selected_station_item)
             ship = self.get_current_ship()
             ship.focused_ware = ship.cargo[int(ship_ware)]
             ship.ware_to_sell_amount = 0
             self.view.refresh_ware_to_sell(ship.ware_to_sell_amount)
+            self.view.refresh_ware_to_buy(station.ware_to_buy_amount)

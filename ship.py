@@ -11,12 +11,9 @@ class Ship:
         self.name = name
         self.cargo_capacity = cargo_capacity
         self.cargo = []
-        self.cargo_level = 1
         self.fuel_capacity = fuel_capacity
         self.fuel_current = fuel_capacity
-        self.fuel_level = 1
         self.engine_burn = engine_burn
-        self.engine_level = 1
         self.ware_to_sell_amount = 0
         self.focused_ware = None
 

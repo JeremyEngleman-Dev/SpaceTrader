@@ -7,7 +7,7 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Space Trader")
-        self.geometry("1600x1200")
+        self.geometry("1600x680")
         self.call('tk','scaling', 2)
 
         game = Game("Test Player","Test Ship")
